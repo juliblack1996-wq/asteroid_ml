@@ -1,0 +1,4 @@
+# file: C:\Users\julib\OneDrive\Desktop\asteroid_ml\training\train_model.py
+# hypothesis_version: 6.148.2
+
+[0.2, 0.25, 0.75, '\nAvailable columns:', '\nDataset Info:', '.csv', '=', 'DATA CLEANING', 'DATA EXPLORATION', 'DATA PREPROCESSING', 'H', '__main__', 'abs_magnitude', 'absolute_magnitude', 'diameter', 'diameter_max', 'est_diameter_max', 'h', 'magnitude', 'magnitude_max', 'magnitude_mean', 'magnitude_min', 'magnitude_std', 'size', 'size_max', 'size_mean', 'size_min', 'size_std']

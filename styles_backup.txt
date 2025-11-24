@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test - Predictor de Tamaño de Asteroides</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+        }
+        .input-group {
+            margin: 20px 0;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #555;
+        }
+        input {
+            width: 100%;
+            padding: 10px;
+            font-size: 16px;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            box-sizing: border-box;
+        }
+        button {
+            width: 100%;
+            padding: 12px;
+            font-size: 18px;
+            background: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+        button:hover {
+            background: #45a049;
+        }
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 5px;
+            display: none;
+        }
+        .result.success {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+        .result.error {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+        .loading {
+            text-align: center;
+            color: #666;
+            margin: 20px 0;
+        }
+        .model-info {
+            background: #e7f3ff;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
+        .examples {
+            background: #fff3cd;
+            padding: 15px;
+            border-radius: 5px;
+            margin-top: 20px;
+        }
+        .examples h3 {
+            margin-top: 0;
+        }
+        .examples ul {
+            margin: 10px 0;
+            padding-left: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🌠 Test del Modelo ML</h1>
+        
+        <div id="loading" class="loading">
+            Cargando modelo...
+        </div>
+
+        <div id="modelInfo" class="model-info" style="display: none;">
+            <strong>Información del Modelo:</strong>
+            <div id="infoContent"></div>
+        </div>
+
+        <div id="app" style="display: none;">
+            <div class="input-group">
+                <label for="magnitude">Magnitud Absoluta (H):</label>
+                <input 
+                    type="number" 
+                    id="magnitude" 
+                    placeholder="Ej: 15.5" 
+                    step="0.1"
+                    min="10"
+                    max="21"
+                >
+                <small>Rango válido: 10.4 - 20.7</small>
+            </div>
+
+            <button id="predictBtn" onclick="makePrediction()">
+                Predecir Tamaño
+            </button>
+
+            <div id="result" class="result"></div>
+
+            <div class="examples">
+                <h3>Ejemplos para probar:</h3>
+                <ul>
+                    <li><strong>H = 15.0</strong> - Asteroide mediano</li>
+                    <li><strong>H = 18.0</strong> - Asteroide pequeño</li>
+                    <li><strong>H = 12.0</strong> - Asteroide grande</li>
+                    <li><strong>H = 20.0</strong> - Asteroide muy pequeño</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <script src="ml-engine.js"></script>
+    <script>
+        const mlEngine = new MLEngine();
+        let isLoading = false;
+
+        // Load model on page load
+        async function initializeModel() {
+            try {
+                await mlEngine.loadModel();
+                
+                // Hide loading, show app
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('app').style.display = 'block';
+                
+                // Show model info
+                const modelInfo = mlEngine.getModelInfo();
+                const infoDiv = document.getElementById('modelInfo');
+                const infoContent = document.getElementById('infoContent');
+                
+                infoContent.innerHTML = `
+                    <div>Capas: ${modelInfo.layers}</div>
+                    <div>Parámetros: ${modelInfo.parameters.toLocaleString()}</div>
+                    <div>Rango de magnitud: [${modelInfo.magnitudeRange[0]}, ${modelInfo.magnitudeRange[1]}]</div>
+                    <div>Rango de tamaño: [${modelInfo.sizeRange[0].toFixed(3)}, ${modelInfo.sizeRange[1].toFixed(3)}] km</div>
+                `;
+                infoDiv.style.display = 'block';
+                
+            } catch (error) {
+                document.getElementById('loading').innerHTML = 
+                    `<div class="result error">Error al cargar el modelo: ${error.message}</div>`;
+            }
+        }
+
+        // Make prediction
+        async function makePrediction() {
+            if (isLoading) return;
+
+            const magnitudeInput = document.getElementById('magnitude');
+            const magnitude = parseFloat(magnitudeInput.value);
+            const resultDiv = document.getElementById('result');
+            const predictBtn = document.getElementById('predictBtn');
+
+            // Validate input
+            if (isNaN(magnitude)) {
+                resultDiv.className = 'result error';
+                resultDiv.textContent = 'Por favor ingresa un valor numérico válido';
+                resultDiv.style.display = 'block';
+                return;
+            }
+
+            // Show loading state
+            isLoading = true;
+            predictBtn.disabled = true;
+            predictBtn.textContent = 'Prediciendo...';
+            resultDiv.style.display = 'none';
+
+            try {
+                // Make prediction
+                const result = await mlEngine.predict(magnitude);
+                
+                // Show result
+                resultDiv.className = 'result success';
+                resultDiv.innerHTML = `
+                    <h3>Resultado de la Predicción</h3>
+                    <p><strong>Magnitud Absoluta (H):</strong> ${magnitude}</p>
+                    <p><strong>Tamaño Estimado:</strong> ${result.size_km.toFixed(3)} km</p>
+                    <p><strong>Diámetro:</strong> ${(result.size_km * 1000).toFixed(0)} metros</p>
+                    <p style="font-size: 12px; color: #666; margin-top: 10px;">
+                        Predicción realizada a las ${result.timestamp.toLocaleTimeString()}
+                    </p>
+                `;
+                resultDiv.style.display = 'block';
+
+            } catch (error) {
+                resultDiv.className = 'result error';
+                resultDiv.textContent = 'Error en la predicción: ' + error.message;
+                resultDiv.style.display = 'block';
+            } finally {
+                isLoading = false;
+                predictBtn.disabled = false;
+                predictBtn.textContent = 'Predecir Tamaño';
+            }
+        }
+
+        // Allow Enter key to submit
+        document.addEventListener('DOMContentLoaded', () => {
+            initializeModel();
+            
+            document.getElementById('magnitude').addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    makePrediction();
+                }
+            });
+        });
+    </script>
+</body>
+</html>

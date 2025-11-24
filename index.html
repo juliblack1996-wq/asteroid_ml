@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Predictor de Asteroides - Sistema de Análisis Espacial</title>
+    <link rel="stylesheet" href="styles.css?v=2">
+</head>
+<body>
+    <!-- Fondo de estrellas animado -->
+    <div class="stars"></div>
+    <div class="stars2"></div>
+    <div class="stars3"></div>
+
+    <!-- Contenedor principal -->
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <div class="logo">
+                <div class="logo-icon">🌠</div>
+                <div class="logo-text">
+                    <h1>Sistema de Análisis de Asteroides</h1>
+                    <p>Predicción de Tamaño mediante Machine Learning</p>
+                </div>
+            </div>
+            <div class="model-status" id="modelStatus">
+                <div class="status-indicator loading"></div>
+                <span>Cargando modelo...</span>
+            </div>
+        </header>
+
+        <!-- Contenido principal -->
+        <main class="main-content">
+            <!-- Panel de entrada -->
+            <section class="input-panel">
+                <h2>Datos del Asteroide</h2>
+                
+                <div class="input-group">
+                    <label for="magnitude">
+                        <span class="label-icon">✨</span>
+                        Magnitud Absoluta (H)
+                    </label>
+                    <div class="input-wrapper">
+                        <input 
+                            type="number" 
+                            id="magnitude" 
+                            placeholder="Ej: 15.5" 
+                            step="0.1"
+                            min="10"
+                            max="21"
+                        >
+                        <span class="input-unit">H</span>
+                    </div>
+                    <div class="input-info">
+                        <span class="info-icon">ℹ️</span>
+                        Rango válido: 10.4 - 20.7
+                    </div>
+                </div>
+
+                <button class="predict-btn" id="predictBtn" onclick="makePrediction()">
+                    <span class="btn-icon">🔮</span>
+                    <span class="btn-text">Analizar Asteroide</span>
+                    <span class="btn-loading">
+                        <span class="spinner"></span>
+                        Analizando...
+                    </span>
+                </button>
+
+                <!-- Ejemplos rápidos -->
+                <div class="quick-examples">
+                    <h3>Ejemplos Rápidos</h3>
+                    <div class="example-buttons">
+                        <button class="example-btn" onclick="setMagnitude(12.0)">
+                            <span>H = 12.0</span>
+                            <small>Grande</small>
+                        </button>
+                        <button class="example-btn" onclick="setMagnitude(15.0)">
+                            <span>H = 15.0</span>
+                            <small>Mediano</small>
+                        </button>
+                        <button class="example-btn" onclick="setMagnitude(18.0)">
+                            <span>H = 18.0</span>
+                            <small>Pequeño</small>
+                        </button>
+                        <button class="example-btn" onclick="setMagnitude(20.0)">
+                            <span>H = 20.0</span>
+                            <small>Muy Pequeño</small>
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Panel de visualización 3D -->
+            <section class="visualization-panel">
+                <div class="asteroid-viewer" id="asteroidViewer">
+                    <div class="viewer-placeholder">
+                        <div class="placeholder-icon">🌌</div>
+                        <p>Ingresa una magnitud para visualizar el asteroide</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Panel de resultados -->
+            <section class="results-panel" id="resultsPanel" style="display: none;">
+                <h2>Resultados del Análisis</h2>
+                
+                <!-- Información básica -->
+                <div class="result-card">
+                    <div class="card-header">
+                        <h3>📊 Características Físicas</h3>
+                    </div>
+                    <div class="card-content">
+                        <div class="stat-row">
+                            <span class="stat-label">Magnitud Absoluta:</span>
+                            <span class="stat-value" id="resultMagnitude">-</span>
+                        </div>
+                        <div class="stat-row highlight">
+                            <span class="stat-label">Diámetro Estimado:</span>
+                            <span class="stat-value" id="resultSize">-</span>
+                        </div>
+                        <div class="stat-row">
+                            <span class="stat-label">Radio:</span>
+                            <span class="stat-value" id="resultRadius">-</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Evaluación de riesgo -->
+                <div class="result-card risk-card" id="riskCard">
+                    <div class="card-header">
+                        <h3>⚠️ Evaluación de Riesgo de Impacto</h3>
+                    </div>
+                    <div class="card-content">
+                        <div class="risk-level" id="riskLevel">
+                            <div class="risk-indicator"></div>
+                            <div class="risk-text">
+                                <h4 id="riskTitle">-</h4>
+                                <p id="riskDescription">-</p>
+                            </div>
+                        </div>
+                        <div class="risk-details" id="riskDetails"></div>
+                    </div>
+                </div>
+
+                <!-- Comparación de tamaño -->
+                <div class="result-card">
+                    <div class="card-header">
+                        <h3>📏 Comparación de Tamaño</h3>
+                    </div>
+                    <div class="card-content">
+                        <div class="comparison" id="comparison"></div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Historial -->
+            <section class="history-panel" id="historyPanel" style="display: none;">
+                <h2>📜 Historial de Análisis</h2>
+                <div class="history-list" id="historyList"></div>
+            </section>
+        </main>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h4>Sobre el Modelo</h4>
+                    <p>Red neuronal entrenada con 127,203 asteroides del dataset de Kaggle</p>
+                    <div class="metrics">
+                        <span>MAE: 1.29 km</span>
+                        <span>R²: 0.56</span>
+                    </div>
+                </div>
+                <div class="footer-section">
+                    <h4>Fuente de Datos</h4>
+                    <p>Dataset: <a href="https://www.kaggle.com/datasets/sakhawat18/asteroid-dataset" target="_blank">Kaggle Asteroid Dataset</a></p>
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <script src="ml-engine.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>

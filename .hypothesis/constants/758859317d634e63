@@ -1,0 +1,4 @@
+# file: C:\Users\julib\OneDrive\Desktop\asteroid_ml\training\train_model.py
+# hypothesis_version: 6.148.2
+
+[0.001, 0.2, 0.25, 0.75, 100, '\nDataset Info:', '\nEvaluation Metrics:', '\nGenerated files:', '\nModel Architecture:', '\nParameters:', '\nTraining complete!', '\nTraining model...', '.csv', '=', 'DATA CLEANING', 'DATA EXPLORATION', 'DATA PREPROCESSING', 'H', 'MODEL EVALUATION', 'MODEL EXPORT', 'MODEL TRAINING', '__main__', 'diameter', 'h', 'keras_model.h5', 'mae', 'magnitude', 'magnitude_max', 'magnitude_mean', 'magnitude_min', 'magnitude_std', 'model', 'model/metrics.json', 'mse', 'r2', 'relu', 'rmse', 'size', 'size_max', 'size_mean', 'size_min', 'size_std', 'test_samples', 'val_loss', 'w']

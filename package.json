@@ -1,0 +1,31 @@
+{
+  "name": "asteroid-size-predictor",
+  "version": "1.0.0",
+  "description": "Web application to predict asteroid size based on absolute magnitude using Machine Learning",
+  "main": "app.js",
+  "scripts": {
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "serve": "python -m http.server 8000"
+  },
+  "keywords": [
+    "asteroid",
+    "machine-learning",
+    "tensorflow",
+    "prediction"
+  ],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "jest": "^29.7.0",
+    "fast-check": "^3.15.0"
+  },
+  "dependencies": {},
+  "jest": {
+    "testEnvironment": "jsdom",
+    "testMatch": [
+      "**/__tests__/**/*.js",
+      "**/?(*.)+(spec|test).js"
+    ]
+  }
+}

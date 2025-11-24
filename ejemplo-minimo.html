@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ejemplo Mínimo - Predictor de Asteroides</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f0f0f0;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 20px;
+        }
+        .input-group {
+            margin: 20px 0;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input {
+            width: 100%;
+            padding: 10px;
+            font-size: 16px;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            box-sizing: border-box;
+        }
+        button {
+            width: 100%;
+            padding: 12px;
+            font-size: 16px;
+            background: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+        button:hover {
+            background: #45a049;
+        }
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            background: #e7f3ff;
+            border-radius: 5px;
+            display: none;
+        }
+        .result.show {
+            display: block;
+        }
+        .result h3 {
+            margin-top: 0;
+            color: #0066cc;
+        }
+        .status {
+            padding: 10px;
+            margin-bottom: 20px;
+            border-radius: 5px;
+            text-align: center;
+        }
+        .status.loading {
+            background: #fff3cd;
+            color: #856404;
+        }
+        .status.ready {
+            background: #d4edda;
+            color: #155724;
+        }
+        .status.error {
+            background: #f8d7da;
+            color: #721c24;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🌠 Predictor de Asteroides</h1>
+        
+        <div id="status" class="status loading">
+            Cargando modelo...
+        </div>
+
+        <div class="input-group">
+            <label for="magnitude">Magnitud Absoluta (H):</label>
+            <input 
+                type="number" 
+                id="magnitude" 
+                placeholder="Ej: 15.5" 
+                step="0.1"
+                min="10"
+                max="21"
+                value="15.0"
+            >
+            <small>Rango válido: 10.4 - 20.7</small>
+        </div>
+
+        <button id="predictBtn" onclick="predecir()" disabled>
+            Predecir Tamaño
+        </button>
+
+        <div id="result" class="result">
+            <h3>Resultado:</h3>
+            <p><strong>Magnitud:</strong> <span id="resultMagnitude">-</span> H</p>
+            <p><strong>Diámetro estimado:</strong> <span id="resultSize">-</span> km</p>
+            <p><strong>Radio:</strong> <span id="resultRadius">-</span> km</p>
+        </div>
+    </div>
+
+    <!-- Incluir el motor ML -->
+    <script src="ml-engine.js"></script>
+    
+    <!-- Código de la aplicación -->
+    <script>
+        let mlEngine = null;
+
+        // Inicializar al cargar la página
+        async function init() {
+            const statusDiv = document.getElementById('status');
+            const predictBtn = document.getElementById('predictBtn');
+            
+            try {
+                statusDiv.textContent = 'Cargando modelo...';
+                statusDiv.className = 'status loading';
+                
+                // Crear y cargar modelo
+                mlEngine = new MLEngine();
+                await mlEngine.loadModel();
+                
+                // Mostrar información del modelo
+                const info = mlEngine.getModelInfo();
+                console.log('✅ Modelo cargado:', info);
+                
+                statusDiv.textContent = '✅ Modelo listo - ' + info.parameters + ' parámetros';
+                statusDiv.className = 'status ready';
+                predictBtn.disabled = false;
+                
+            } catch (error) {
+                console.error('❌ Error al cargar modelo:', error);
+                statusDiv.textContent = '❌ Error al cargar modelo: ' + error.message;
+                statusDiv.className = 'status error';
+            }
+        }
+
+        // Hacer predicción
+        async function predecir() {
+            const magnitudeInput = document.getElementById('magnitude');
+            const magnitude = parseFloat(magnitudeInput.value);
+            
+            // Validar entrada
+            if (isNaN(magnitude)) {
+                alert('Por favor ingresa un valor válido');
+                return;
+            }
+            
+            if (magnitude < 10 || magnitude > 21) {
+                alert('La magnitud debe estar entre 10 y 21');
+                return;
+            }
+            
+            try {
+                // Deshabilitar botón mientras predice
+                const predictBtn = document.getElementById('predictBtn');
+                predictBtn.disabled = true;
+                predictBtn.textContent = 'Prediciendo...';
+                
+                // Hacer predicción
+                const result = await mlEngine.predict(magnitude);
+                const diameter = result.size_km;
+                const radius = diameter / 2;
+                
+                // Mostrar resultados
+                document.getElementById('resultMagnitude').textContent = magnitude.toFixed(2);
+                document.getElementById('resultSize').textContent = diameter.toFixed(3);
+                document.getElementById('resultRadius').textContent = radius.toFixed(3);
+                document.getElementById('result').classList.add('show');
+                
+                console.log('Predicción:', result);
+                
+                // Rehabilitar botón
+                predictBtn.disabled = false;
+                predictBtn.textContent = 'Predecir Tamaño';
+                
+            } catch (error) {
+                console.error('Error en predicción:', error);
+                alert('Error al realizar la predicción: ' + error.message);
+                
+                const predictBtn = document.getElementById('predictBtn');
+                predictBtn.disabled = false;
+                predictBtn.textContent = 'Predecir Tamaño';
+            }
+        }
+
+        // Permitir predicción con Enter
+        document.getElementById('magnitude').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter' && !document.getElementById('predictBtn').disabled) {
+                predecir();
+            }
+        });
+
+        // Inicializar cuando se carga la página
+        window.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+</html>
